@@ -453,7 +453,35 @@ class Login:
           except KeyError:
              None
           for a in url['data']:
+            try:
               array.append(self.download_trackdee(a['link'], output, check))
+            except TrackNotFound:
+              pass
+          if url.get('next'):
+            array = self._download_playlistdee(array, url, output, check)
+          return array
+      def _download_playlistdee(self, array, next_url, output=localdir + "/Songs/", check=True):
+          try:
+            url = json.loads(requests.get(next_url.get('next')).text)
+          except:
+            url = json.loads(requests.get(next_url.get('next')).text)
+          try:
+            if url['error']['message'] == "Quota limit exceeded":
+              raise QuotaExceeded("Too much requests limit yourself")
+          except KeyError:
+            None
+          try:
+            if "error" in str(url):
+              raise InvalidLink("Invalid link ;)")
+          except KeyError:
+            None
+          for a in url['data']:
+            try:
+              array.append(self.download_trackdee(a['link'], output, check))
+            except TrackNotFound:
+              pass
+          if url.get('next'):
+            array = self._download_playlistdee(array, url, output, check)
           return array
       def download_trackspo(self, URL, output=localdir + "/Songs/", check=True, playlist=False):
           global spo
